@@ -1,29 +1,156 @@
 <!DOCTYPE html>
 <html lang='en'>
   <head>
+
     <meta charset='utf-8'>
     <meta content='width=device-width, initial-scale=1' name='viewport'>
     <meta content='IE=edge' http-equiv='X-UA-Compatible'>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥟</text></svg>">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <style>
-      #map { height: 300px; width: 300px; }
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        width: 100%;
+        height: 100%;
+        background-image: url(public/dumpling_dance.gif);
+        background-repeat: round;
+        opacity: 0.05;
+      }
+      #map {
+        height: 600px;
+        width: 600px;
+        margin: 0 auto;
+      }
+      .icon {
+        font-size: 25px;
+        filter: drop-shadow(3px 5px 2px rgb(0 0 0 / 0.4));
+      }
+      .leaflet-div-icon {
+        background: transparent;
+        border: none;
+      }
     </style>
-    <title>🥟 Dumpling Time 🥟</title>
+    <title>Dumpling Time</title>
   </head>
   <body>
     <div style="margin: 0 auto; width: 100%; text-align: center;">
       <img src="public/dumpling_dance.gif" />
+      <br>
+      <br>
+      <br>
+      <br>
+      <div id='map'></div>
+      <br>
+      <br>
+      <br>
+      <br>
+      <div id='leaderboard'>
+        <h3>Leaderboard</h3>
+      </div>
     </div>
     <script>
       var map = L.map('map').setView([40.7328669,-73.993624], 13);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      window.map=map;
+      L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.jpg', {
         maxZoom: 19,
         attribution: '© OpenStreetMap'
       }).addTo(map);
-      L.marker([40.7328669,-73.993624]).addTo(map)
-        .bindPopup('3 times')
-        .openPopup();
+
+      var dumplingPlaces = [
+        {
+          name: "3 times",
+          address: "818 Broadway, New York, NY 10003",
+          website: "http://3timesny.com",
+          score: 99,
+          lat: 40.7328669,
+          lng: -73.993624
+        },
+        {
+          name: "CheLi Manhattan 浙里",
+          address: "19 St Marks Pl, New York, NY 10003",
+          website: "https://www.che-li.com",
+          score: 99,
+          lat: 40.7291257,
+          lng: -73.9888486
+        },
+        {
+          name: "Fried Dumpling",
+          address: "106 Mosco St, New York, NY 10013",
+          website: "https://fried-dumpling.com",
+          score: 75,
+          lat: 40.7145119,
+          lng: -73.9999269
+        },
+        {
+          name: "Congee Dim Sum House",
+          address: "207 Bowery, New York, NY 10002",
+          website: "https://congeenyc.com",
+          score: 75,
+          lat: 40.7199605,
+          lng: -73.99443
+        },
+        {
+          name: "Jing Fong",
+          address: "202 Centre St, New York, NY 10013",
+          website: "https://jingfongny.com",
+          score: 85,
+          lat: 40.71888522221085,
+          lng: -73.99908279148667
+        },
+        {
+          name: "Nom Wah Tea Parlor",
+          address: "13 Doyers St, New York, NY 10013",
+          website: "https://nomwah.com",
+          score: 0,
+          lat: 40.7144446,
+          lng: -74.0031303
+        },
+        {
+          name: "Steam",
+          address: "470 6th Ave, New York, NY 10011",
+          website: "https://steam-nyc.com",
+          score: 0,
+          lat: 40.7355571,
+          lng: -74.0026724
+        },
+        {
+          name: "Mimi Cheng's Dumplings",
+          address: "179 2nd Ave, New York, NY 10003",
+          website: "https://mimichengs.com",
+          score: 80,
+          lat: 40.7307683,
+          lng: -73.991232
+        }
+      ];
+
+      var dumplingPlacesSorted = dumplingPlaces.sort(function(a, b) {
+        return b.score - a.score;
+      });
+
+      var leaderboardDiv = document.getElementById('leaderboard');
+
+      dumplingPlacesSorted.forEach(function(dumplingPlace) {
+        // add map marker
+        var marker = L.marker([dumplingPlace.lat, dumplingPlace.lng], { icon: L.divIcon({ html: '<div class="icon">&#129375;</div>' }) })
+          .addTo(map)
+          .bindPopup('<b>'+dumplingPlace.name+'</b>' + '<br>' + dumplingPlace.address + '<br>' + '<a href="'+dumplingPlace.website+'">'+dumplingPlace.website+'</a>'+'<br>' + dumplingPlace.score + ' points');
+        // add to leaderboard
+        var dumplingPlaceDiv = document.createElement('div');
+        var dumplingPlaceLink = document.createElement('a');
+        dumplingPlaceLink.innerHTML = dumplingPlace.name + ' - ' + dumplingPlace.score + ' points';
+        dumplingPlaceLink.href = '#map';
+        dumplingPlaceLink.onclick = function() {
+          map.setView([dumplingPlace.lat, dumplingPlace.lng], 18);
+          marker.openPopup();
+        };
+        dumplingPlaceDiv.appendChild(dumplingPlaceLink);
+        leaderboardDiv.appendChild(dumplingPlaceDiv);
+      });
     </script>
   </body>
 </html>
